@@ -1,0 +1,7 @@
+# Private job-search data lives under ~/job-search/, never in this repo.
+# This guards against accidentally placing real profile/application data here.
+job-search/
+applications/
+applications.json
+profile/resume.md
+profile/preferences.md
