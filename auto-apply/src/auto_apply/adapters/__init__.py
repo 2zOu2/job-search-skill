@@ -1,6 +1,7 @@
+from .greenhouse import GreenhouseAdapter
 from .lever import LeverAdapter
 
-ADAPTERS = [LeverAdapter]
+ADAPTERS = [LeverAdapter, GreenhouseAdapter]
 
 
 def for_url(url: str):
