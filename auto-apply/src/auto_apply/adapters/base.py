@@ -8,9 +8,10 @@ from dataclasses import dataclass, field
 class Question:
     label: str
     qtype: str           # text | textarea | select | radio | checkbox | file
-    selector: str        # how to locate the input for filling
+    selector: str = ""   # optional CSS fallback
     required: bool = False
     options: list[str] = field(default_factory=list)
+    handle: object = None  # Playwright element handle for the question block
 
 
 @dataclass

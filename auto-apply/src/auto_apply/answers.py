@@ -59,11 +59,12 @@ def resolve_answer(label: str, qtype: str, profile: Profile, llm) -> Resolved:
         if val:
             return Resolved(str(val), "auto", bank_key)
 
-    # Free-text question with no bank entry: draft if it's an essay-style field.
-    if qtype in ("textarea", "text"):
+    # Essay-style question with no bank entry: draft it. Short text fields and
+    # radios/selects/checkboxes with no known answer go to you (don't guess URLs
+    # or pick options blindly).
+    if qtype == "textarea":
         return _draft(label, profile, llm)
 
-    # Radios / selects / checkboxes with no known answer: hand to user.
     return Resolved("", "needs-you", bank_key)
 
 
