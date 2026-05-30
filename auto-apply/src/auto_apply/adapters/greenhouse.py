@@ -16,7 +16,7 @@ import re
 
 from .base import Adapter, FilledField, Question
 
-_GH_RE = re.compile(r"https?://(boards|job-boards)\.greenhouse\.io/", re.I)
+_GH_RE = re.compile(r"https?://(boards|job-boards)(\.[a-z]{2})?\.greenhouse\.io/", re.I)
 
 _STANDARD_IDS = {"first_name", "last_name", "email", "phone"}
 _STANDARD_NAMES = {
