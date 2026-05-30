@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job Fit Co-pilot</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Job Fit Co-pilot</h1>
+      <button id="toggleSettings" class="ghost">⚙︎ Settings</button>
+    </header>
+
+    <!-- Settings: resume, preferences, API key. Saved locally. -->
+    <section id="settings" class="card hidden">
+      <p class="muted">
+        Everything here is stored only in your browser (localStorage). Your API
+        key is sent only to api.anthropic.com when you run an assessment.
+      </p>
+      <label>Your resume
+        <span class="muted">— paste plain text or Markdown. Assessments use only this.</span>
+      </label>
+      <textarea id="resume" rows="8" placeholder="Paste your resume…"></textarea>
+
+      <label>Preferences <span class="muted">— optional: location, comp floor, visa/sponsorship needs.</span></label>
+      <textarea id="prefs" rows="4" placeholder="e.g. Remote or NYC · min $120k · need visa sponsorship"></textarea>
+
+      <div class="row">
+        <div class="grow">
+          <label>Anthropic API key</label>
+          <input id="apiKey" type="password" placeholder="sk-ant-…" />
+        </div>
+        <div>
+          <label>Model</label>
+          <select id="model">
+            <option value="claude-haiku-4-5-20251001">Haiku (fast, cheap)</option>
+            <option value="claude-sonnet-4-6">Sonnet (sharper)</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="saveSettings">Save settings</button>
+      <span id="savedNote" class="ok"></span>
+    </section>
+
+    <!-- Main loop: paste JD → assess -->
+    <main>
+      <section class="card">
+        <label>Paste a job description</label>
+        <textarea id="jd" rows="12" placeholder="Paste the full job posting here — any site, any format."></textarea>
+        <div class="row">
+          <button id="assess">Assess fit</button>
+          <span id="status" class="muted"></span>
+        </div>
+      </section>
+
+      <section id="result" class="card hidden"></section>
+    </main>
+
+    <footer class="muted">
+      Phase 1 — paste &amp; assess. Tailoring, tracking, and one-click capture come next.
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

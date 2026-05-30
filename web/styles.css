@@ -1,0 +1,90 @@
+:root {
+  --fg: #16181d;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #2563eb;
+  --green: #137333;
+  --amber: #8a6d00;
+  --red: #b00020;
+  --bg: #f7f8fa;
+}
+* { box-sizing: border-box; }
+body {
+  font: 15px/1.55 -apple-system, system-ui, "Segoe UI", sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  margin: 0;
+  padding: 0 16px 48px;
+}
+header {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0 8px;
+}
+h1 { font-size: 20px; margin: 0; }
+main, footer, section { max-width: 760px; margin: 0 auto; }
+footer { padding-top: 16px; font-size: 13px; text-align: center; }
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px auto;
+}
+.hidden { display: none; }
+.muted { color: var(--muted); font-weight: 400; }
+.ok { color: var(--green); margin-left: 10px; font-size: 13px; }
+
+label { display: block; font-weight: 600; margin: 12px 0 4px; }
+label:first-child { margin-top: 0; }
+textarea, input, select {
+  width: 100%;
+  font: inherit;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+textarea { resize: vertical; }
+
+.row { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+.grow { flex: 1; }
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+button:hover { filter: brightness(0.95); }
+button:disabled { opacity: 0.55; cursor: default; }
+button.ghost { background: none; color: var(--fg); border: 1px solid var(--line); font-weight: 500; }
+
+/* result */
+.verdict { display: inline-block; font-weight: 700; padding: 5px 12px; border-radius: 999px; }
+.v-strong, .v-worth { background: #e6f4ea; color: var(--green); }
+.v-stretch { background: #fef7e0; color: var(--amber); }
+.v-skip { background: #fce8e6; color: var(--red); }
+
+.flag {
+  background: #fce8e6;
+  color: var(--red);
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-weight: 600;
+}
+.head-line { font-size: 16px; margin: 4px 0 10px; }
+.head-line strong { font-size: 17px; }
+h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 16px 0 6px; }
+ul { margin: 4px 0; padding-left: 20px; }
+li { margin: 3px 0; }
+.gap li { color: #92400e; }
