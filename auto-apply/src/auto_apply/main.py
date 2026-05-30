@@ -51,7 +51,14 @@ def cmd_apply(url: str) -> int:
         for q in adapter.extract_questions(page):
             r = resolve_answer(q.label, q.qtype, profile, llm) if llm else \
                 _no_llm_resolve(q, profile)
-            filled = adapter.fill_question(page, q, r.value) if r.value else False
+            # Only auto/drafted answers go into the form; needs-you (sensitive or
+            # unknown) is left for you to enter in the browser, even if a
+            # suggested value exists.
+            filled = (
+                adapter.fill_question(page, q, r.value)
+                if r.value and r.confidence in ("auto", "drafted")
+                else False
+            )
             fields.append(FilledField(q.label, r.value, r.confidence, filled))
 
         meta = adapter.parse_meta(page)
@@ -78,10 +85,11 @@ def _resume_path(profile):
 def _no_llm_resolve(q, profile):
     from .answers import Resolved, _match_key
     key = _match_key(q.label)
-    if key and key not in profile.sensitive_keys:
+    if key:
         val = profile.lookup(key)
         if val:
-            return Resolved(str(val), "auto", key)
+            conf = "needs-you" if key in profile.sensitive_keys else "auto"
+            return Resolved(str(val), conf, key)
     return Resolved("", "needs-you", key)
 
 

@@ -44,9 +44,12 @@ def resolve_answer(label: str, qtype: str, profile: Profile, llm) -> Resolved:
     """Resolve one open question to a value + confidence."""
     bank_key = _match_key(label)
 
-    # Sensitive questions are never auto-answered, even if a value exists.
+    # Sensitive questions are never auto-FILLED. If the bank has a value, surface
+    # it as a suggestion (shown in the review, not typed into the form) so you can
+    # confirm and enter it yourself.
     if bank_key and bank_key in profile.sensitive_keys:
-        return Resolved("", "needs-you", bank_key)
+        val = profile.lookup(bank_key)
+        return Resolved(str(val) if val else "", "needs-you", bank_key)
 
     if bank_key:
         val = profile.lookup(bank_key)
