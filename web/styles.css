@@ -91,6 +91,8 @@ li { margin: 3px 0; }
 
 /* settings: bookmarklet */
 hr.sep { border: none; border-top: 1px solid var(--line); margin: 20px 0 4px; }
+ol.bm-steps { margin: 8px 0; padding-left: 20px; }
+ol.bm-steps li { margin: 5px 0; font-size: 14px; }
 .bookmarklet {
   display: inline-block;
   font-weight: 700;
