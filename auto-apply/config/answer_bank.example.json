@@ -1,0 +1,37 @@
+{
+  "_comment": "Copy this to ~/job-search/answer_bank.json and fill in YOUR real answers. Sensitive fields (salary, EEO, anything visa) are always routed to you for review even when a value exists. Leave a field as \"\" to force a needs-you prompt.",
+
+  "basics": {
+    "name": "Zhengyi Ou",
+    "email": "joeou2002@gmail.com",
+    "phone": "+1 404-926-6260",
+    "location": "Atlanta, GA",
+    "linkedin": "https://www.linkedin.com/in/zhengyiou",
+    "github": "https://github.com/2zOu2",
+    "portfolio": "",
+    "current_company": ""
+  },
+
+  "work_authorization": "",
+  "needs_sponsorship": "",
+  "sponsorship_now_or_future": "",
+
+  "salary_expectation": "",
+  "willing_to_relocate": "",
+  "earliest_start_date": "",
+  "notice_period": "",
+
+  "eeo_gender": "",
+  "eeo_race": "",
+  "eeo_veteran": "",
+  "eeo_disability": "",
+
+  "how_did_you_hear": "LinkedIn",
+  "why_this_company": "<LLM drafts this per company from your resume + the JD>",
+
+  "sensitive_keys": [
+    "salary_expectation",
+    "eeo_gender", "eeo_race", "eeo_veteran", "eeo_disability",
+    "work_authorization", "needs_sponsorship", "sponsorship_now_or_future"
+  ]
+}

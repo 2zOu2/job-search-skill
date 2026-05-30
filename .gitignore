@@ -5,3 +5,10 @@ applications/
 applications.json
 profile/resume.md
 profile/preferences.md
+answer_bank.json
+*.pdf
+
+# Python / Playwright
+.venv/
+__pycache__/
+*.pyc
