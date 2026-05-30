@@ -1,5 +1,6 @@
 import { callClaude, parseJson } from "./claude.js";
 import { judgePrompt, tailorPrompt, coverLetterPrompt } from "./prompt.js";
+import { buildBookmarklet } from "./bookmarklet.js";
 
 const $ = (id) => document.getElementById(id);
 const LS = {
@@ -13,6 +14,8 @@ const STATUSES = ["Interested", "Applied", "Interviewing", "Offer", "Rejected"];
 
 // In-progress assessment for the currently pasted JD.
 let current = null; // { jd, assessment, tailored, changes, coverLetter }
+// Source URL of the JD when captured via the bookmarklet (else "").
+let sourceUrl = "";
 
 // --- settings persistence ---------------------------------------------------
 function loadSettings() {
@@ -91,6 +94,7 @@ function renderResult() {
     <div class="head-line">
       <strong>${esc(a.title || "Untitled role")}</strong>${headBits ? " — " + headBits : ""}
     </div>
+    ${sourceUrl ? `<div class="muted src-line">↗ <a href="${esc(sourceUrl)}" target="_blank" rel="noopener">${esc(shortUrl(sourceUrl))}</a></div>` : ""}
     <span class="verdict ${vClass}">${esc(a.verdict || "")}</span>
     ${a.verdictReason ? `<span class="muted"> ${esc(a.verdictReason)}</span>` : ""}
     ${a.visaConflict ? `<div class="flag">⚠️ Visa: ${esc(a.visaNote || "sponsorship conflict")}</div>` : ""}
@@ -240,6 +244,7 @@ function saveToTracker() {
     location: a.location || "",
     verdict: a.verdict || "",
     status: "Interested",
+    sourceUrl: sourceUrl || "",
     jd: current.jd,
     assessment: a,
     tailored: current.tailored || "",
@@ -285,6 +290,7 @@ function renderTracker() {
         <span class="t-co">${esc(r.company || "—")}</span>
         <span class="muted"> · ${esc(r.title || "role")}</span>
         ${r.verdict ? `<span class="verdict sm ${vClass}">${esc(r.verdict)}</span>` : ""}
+        ${r.sourceUrl ? `<a class="src-ico" href="${esc(r.sourceUrl)}" target="_blank" rel="noopener" title="Open job posting">↗</a>` : ""}
       </div>
       <select class="t-status">${STATUSES.map(
         (s) => `<option ${s === r.status ? "selected" : ""}>${s}</option>`
@@ -324,6 +330,7 @@ function renderDetail(el, r) {
          </div>`
       : "";
   el.innerHTML = `
+    ${r.sourceUrl ? `<p class="muted src-line">↗ <a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">${esc(r.sourceUrl)}</a></p>` : ""}
     ${a.matches && a.matches.length ? `<h4>Why you match</h4>${li(a.matches)}` : ""}
     ${a.gaps && a.gaps.length ? `<h4>Gaps</h4>${li(a.gaps, "gap")}` : ""}
     ${r.tailored
@@ -357,5 +364,46 @@ function esc(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
+function shortUrl(u) {
+  try {
+    const { hostname, pathname } = new URL(u);
+    const p = pathname.length > 24 ? pathname.slice(0, 24) + "…" : pathname;
+    return hostname.replace(/^www\./, "") + p;
+  } catch { return u; }
+}
+
+// If the user edits the JD by hand, it's no longer tied to the captured source.
+$("jd").addEventListener("input", () => { sourceUrl = ""; });
+
+// --- one-click capture (Phase 3) --------------------------------------------
+// Reads a JD handed in via the URL hash (#jd=…&src=…) from the bookmarklet,
+// and renders the draggable bookmarklet itself in Settings.
+function importFromHash() {
+  const hash = location.hash.slice(1);
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  const jd = params.get("jd");
+  if (!jd) return;
+  $("jd").value = jd;
+  sourceUrl = params.get("src") || "";
+  // Clear the hash so a refresh doesn't re-import.
+  history.replaceState(null, "", location.pathname + location.search);
+  setStatus("Captured from the job page — review, then Assess fit.");
+  $("jd").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function setupBookmarklet() {
+  const link = $("bookmarklet");
+  if (!link) return;
+  link.href = buildBookmarklet(location.origin);
+  // Stop accidental clicks (it's meant to be dragged to the bookmarks bar).
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    alert("Drag this button to your bookmarks bar, then click it on any job posting.");
+  });
+}
+
 loadSettings();
+setupBookmarklet();
+importFromHash();
 renderTracker();
