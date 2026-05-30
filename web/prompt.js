@@ -35,3 +35,20 @@ ${prefs || "(none provided)"}
 === JOB DESCRIPTION ===
 ${jd}`;
 }
+
+// Tailors the master resume to a specific JD. Reorders/rewords EXISTING content
+// only — never invents experience, numbers, or skills.
+export function tailorPrompt(jd, resume) {
+  return `Tailor the candidate's master resume to the job description below.
+Reorder, reword, and re-emphasize content that ALREADY EXISTS in the master resume
+so it matches the JD's priorities and keywords. Lead with the most relevant
+experience. Do NOT add anything the master resume doesn't support — no invented
+roles, numbers, skills, or claims. Keep it to roughly one page. Output clean
+Markdown only — no commentary, no code fences.
+
+=== MASTER RESUME ===
+${resume}
+
+=== JOB DESCRIPTION ===
+${jd}`;
+}

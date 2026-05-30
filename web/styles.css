@@ -88,3 +88,51 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: 
 ul { margin: 4px 0; padding-left: 20px; }
 li { margin: 3px 0; }
 .gap li { color: #92400e; }
+
+/* tailored resume + action buttons */
+.btnlink {
+  display: inline-block;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--fg);
+  text-decoration: none;
+  cursor: pointer;
+}
+.btnlink:hover { background: var(--bg); }
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 360px;
+  overflow: auto;
+  font: 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+}
+pre.jd { max-height: 200px; color: var(--muted); }
+
+/* tracker */
+.verdict.sm { font-size: 11px; padding: 2px 8px; margin-left: 6px; }
+button.sm, .btnlink.sm { padding: 4px 10px; font-size: 13px; }
+.trow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.trow-main { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t-co { font-weight: 600; }
+.t-status { width: auto; padding: 4px 8px; font-size: 13px; }
+.t-date { font-size: 12px; white-space: nowrap; }
+.tdetail { padding: 4px 0 14px; border-top: 1px dashed var(--line); }
+.tdetail h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 12px 0 4px; }
+
+@media (max-width: 600px) {
+  .trow { flex-wrap: wrap; }
+  .t-date { display: none; }
+}
