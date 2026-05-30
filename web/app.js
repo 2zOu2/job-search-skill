@@ -1,5 +1,5 @@
 import { callClaude, parseJson } from "./claude.js";
-import { judgePrompt, tailorPrompt } from "./prompt.js";
+import { judgePrompt, tailorPrompt, coverLetterPrompt } from "./prompt.js";
 
 const $ = (id) => document.getElementById(id);
 const LS = {
@@ -12,7 +12,7 @@ const LS = {
 const STATUSES = ["Interested", "Applied", "Interviewing", "Offer", "Rejected"];
 
 // In-progress assessment for the currently pasted JD.
-let current = null; // { jd, assessment, tailored }
+let current = null; // { jd, assessment, tailored, changes, coverLetter }
 
 // --- settings persistence ---------------------------------------------------
 function loadSettings() {
@@ -56,7 +56,7 @@ $("assess").onclick = async () => {
       prompt: judgePrompt(jd, getResume(), localStorage.getItem(LS.prefs) || ""),
       maxTokens: 900,
     });
-    current = { jd, assessment: parseJson(text), tailored: "" };
+    current = { jd, assessment: parseJson(text), tailored: "", changes: [], coverLetter: "" };
     renderResult();
     setStatus("");
   } catch (e) {
@@ -104,11 +104,13 @@ function renderResult() {
       <span id="resultStatus" class="muted"></span>
     </div>
     <div id="tailoredOut"></div>
+    <div id="coverOut"></div>
   `;
   el.classList.remove("hidden");
   $("tailorBtn").onclick = doTailor;
   $("saveBtn").onclick = saveToTracker;
-  if (current.tailored) renderTailored(current.tailored);
+  if (current.tailored) renderTailored(current.tailored, current.changes);
+  if (current.coverLetter) renderCoverLetter(current.coverLetter);
   el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -118,14 +120,16 @@ async function doTailor() {
   btn.disabled = true;
   st.textContent = "Tailoring…";
   try {
-    const md = await callClaude({
+    const raw = await callClaude({
       apiKey: localStorage.getItem(LS.apiKey),
       model: getModel(),
       prompt: tailorPrompt(current.jd, getResume()),
-      maxTokens: 2000,
+      maxTokens: 2400,
     });
-    current.tailored = md;
-    renderTailored(md);
+    const parsed = parseJson(raw);
+    current.tailored = parsed.resume || raw; // fallback: model returned plain md
+    current.changes = Array.isArray(parsed.changes) ? parsed.changes : [];
+    renderTailored(current.tailored, current.changes);
     st.textContent = "";
   } catch (e) {
     st.textContent = e.message;
@@ -135,27 +139,85 @@ async function doTailor() {
   }
 }
 
-function renderTailored(md) {
+function renderTailored(md, changes) {
   const a = current.assessment;
   const slug = ((a.company || "company") + "-" + (a.title || "role"))
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const changeHtml =
+    changes && changes.length
+      ? `<div class="changes-box">
+           <div class="changes-title">What changed vs your master resume</div>
+           <ul class="changes-list">${changes.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>
+         </div>`
+      : "";
   const out = $("tailoredOut");
   out.innerHTML = `
     <h3>Tailored resume</h3>
-    <div class="row" style="margin-top:0">
+    ${changeHtml}
+    <div class="row" style="margin-top:8px">
       <a id="dlBtn" class="btnlink" download="${slug}-resume.md">Download .md</a>
-      <button id="copyBtn" class="ghost">Copy</button>
+      <button id="copyResumeBtn" class="ghost">Copy</button>
+      <button id="coverBtn" class="ghost">Draft cover letter</button>
     </div>
     <pre id="tailoredPre"></pre>
   `;
   $("tailoredPre").textContent = md;
   const url = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
   $("dlBtn").href = url;
-  $("copyBtn").onclick = async () => {
+  $("copyResumeBtn").onclick = async () => {
     await navigator.clipboard.writeText(md);
-    $("copyBtn").textContent = "Copied ✓";
-    setTimeout(() => ($("copyBtn").textContent = "Copy"), 1500);
+    $("copyResumeBtn").textContent = "Copied ✓";
+    setTimeout(() => ($("copyResumeBtn").textContent = "Copy"), 1500);
   };
+  $("coverBtn").onclick = doCoverLetter;
+}
+
+async function doCoverLetter() {
+  const btn = $("coverBtn");
+  btn.disabled = true;
+  btn.textContent = "Drafting…";
+  try {
+    const letter = await callClaude({
+      apiKey: localStorage.getItem(LS.apiKey),
+      model: getModel(),
+      prompt: coverLetterPrompt(current.jd, getResume(), current.assessment),
+      maxTokens: 700,
+    });
+    current.coverLetter = letter;
+    renderCoverLetter(letter);
+    btn.textContent = "Re-draft cover letter";
+  } catch (e) {
+    btn.textContent = "Draft cover letter";
+    const st = $("resultStatus");
+    st.textContent = e.message;
+    st.style.color = "var(--red)";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderCoverLetter(letter) {
+  const a = current.assessment;
+  const slug = ((a.company || "company") + "-" + (a.title || "role"))
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const out = $("coverOut");
+  out.innerHTML = `
+    <h3>Cover letter</h3>
+    <div class="row" style="margin-top:0">
+      <a id="dlCoverBtn" class="btnlink" download="${slug}-cover.txt">Download .txt</a>
+      <button id="copyCoverBtn" class="ghost">Copy</button>
+    </div>
+    <pre id="coverPre"></pre>
+  `;
+  $("coverPre").textContent = letter;
+  const url = URL.createObjectURL(new Blob([letter], { type: "text/plain" }));
+  $("dlCoverBtn").href = url;
+  $("copyCoverBtn").onclick = async () => {
+    await navigator.clipboard.writeText(letter);
+    $("copyCoverBtn").textContent = "Copied ✓";
+    setTimeout(() => ($("copyCoverBtn").textContent = "Copy"), 1500);
+  };
+  out.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 // --- tracker ----------------------------------------------------------------
@@ -181,6 +243,8 @@ function saveToTracker() {
     jd: current.jd,
     assessment: a,
     tailored: current.tailored || "",
+    changes: current.changes || [],
+    coverLetter: current.coverLetter || "",
   });
   setRecords(recs);
   renderTracker();
@@ -250,17 +314,42 @@ function renderTracker() {
 
 function renderDetail(el, r) {
   const a = r.assessment || {};
-  const sec = (label, body) => (body ? `<h4>${label}</h4>${body}` : "");
-  const li = (items) => (items && items.length ? `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "");
+  const li = (items, cls = "") =>
+    items && items.length ? `<ul class="${cls}">${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
+  const changesHtml =
+    r.changes && r.changes.length
+      ? `<div class="changes-box">
+           <div class="changes-title">What changed vs master resume</div>
+           ${li(r.changes)}
+         </div>`
+      : "";
   el.innerHTML = `
-    ${sec("Why you match", li(a.matches))}
-    ${sec("Gaps", li(a.gaps))}
-    ${r.tailored ? `<h4>Tailored resume</h4><div class="row" style="margin-top:0"><a class="btnlink" id="d-${r.id}" download="resume.md">Download .md</a></div><pre>${esc(r.tailored)}</pre>` : `<p class="muted">No tailored resume saved.</p>`}
+    ${a.matches && a.matches.length ? `<h4>Why you match</h4>${li(a.matches)}` : ""}
+    ${a.gaps && a.gaps.length ? `<h4>Gaps</h4>${li(a.gaps, "gap")}` : ""}
+    ${r.tailored
+      ? `<h4>Tailored resume</h4>
+         ${changesHtml}
+         <div class="row" style="margin-top:4px">
+           <a class="btnlink sm" id="d-res-${r.id}" download="resume.md">Download .md</a>
+         </div>
+         <pre>${esc(r.tailored)}</pre>`
+      : `<p class="muted">No tailored resume saved.</p>`}
+    ${r.coverLetter
+      ? `<h4>Cover letter</h4>
+         <div class="row" style="margin-top:0">
+           <a class="btnlink sm" id="d-cov-${r.id}" download="cover.txt">Download .txt</a>
+         </div>
+         <pre>${esc(r.coverLetter)}</pre>`
+      : ""}
     <h4>Job description</h4><pre class="jd">${esc(r.jd || "")}</pre>
   `;
   if (r.tailored) {
     const url = URL.createObjectURL(new Blob([r.tailored], { type: "text/markdown" }));
-    el.querySelector(`#d-${r.id}`).href = url;
+    el.querySelector(`#d-res-${r.id}`).href = url;
+  }
+  if (r.coverLetter) {
+    const url = URL.createObjectURL(new Blob([r.coverLetter], { type: "text/plain" }));
+    el.querySelector(`#d-cov-${r.id}`).href = url;
   }
 }
 
