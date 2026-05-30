@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { font: 14px/1.6 -apple-system, system-ui, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; color: #1a1a1a; }
+      h1 { font-size: 20px; }
+      label { display: block; font-weight: 600; margin: 16px 0 4px; }
+      .hint { font-weight: 400; color: #777; font-size: 12px; }
+      textarea, input { width: 100%; font: inherit; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+      textarea { min-height: 120px; font-family: ui-monospace, monospace; font-size: 12px; }
+      .row { display: flex; gap: 12px; }
+      .row > div { flex: 1; }
+      button { font: inherit; padding: 8px 16px; border-radius: 6px; border: 1px solid #137333; background: #137333; color: #fff; cursor: pointer; margin-top: 20px; }
+      #saved { color: #137333; margin-left: 12px; }
+      .err { color: #b00020; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Job Apply Co-pilot — Settings</h1>
+    <p class="hint">Everything is stored in your browser only (chrome.storage.local). It's sent out only as part of Claude API calls you trigger.</p>
+
+    <label>Master resume (Markdown)
+      <span class="hint">Source of truth. Tailoring and answers use only what's here.</span></label>
+    <textarea id="resume" placeholder="# Your Name&#10;..."></textarea>
+
+    <label>Preferences (Markdown, optional)
+      <span class="hint">Location, comp floor, visa/sponsorship — powers the visa-conflict flag.</span></label>
+    <textarea id="prefs" placeholder="Visa: ...&#10;Locations: ..."></textarea>
+
+    <label>Answer bank (JSON)
+      <span class="hint">Reused answers for application questions. <a id="loadExample" href="#">Load example</a></span></label>
+    <textarea id="bank" placeholder='{ "basics": { "name": "..." } }'></textarea>
+    <div id="bankErr" class="err"></div>
+
+    <label>Anthropic API key
+      <span class="hint">From console.anthropic.com. Used to judge, tailor, and draft answers.</span></label>
+    <input id="apiKey" type="password" placeholder="sk-ant-..." />
+
+    <div class="row">
+      <div>
+        <label>Judge model</label>
+        <input id="judgeModel" />
+      </div>
+      <div>
+        <label>Tailor / draft model</label>
+        <input id="tailorModel" />
+      </div>
+    </div>
+
+    <button id="save">Save</button><span id="saved"></span>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

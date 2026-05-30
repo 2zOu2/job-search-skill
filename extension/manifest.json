@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Job Apply Co-pilot",
+  "version": "0.1.0",
+  "description": "Judge a job, tailor your resume, and auto-fill Lever/Greenhouse applications — grounded in your own resume.",
+  "permissions": ["storage", "sidePanel", "activeTab", "scripting", "downloads"],
+  "host_permissions": [
+    "https://jobs.lever.co/*",
+    "https://*.greenhouse.io/*",
+    "https://api.anthropic.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Job Apply Co-pilot"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/panel.html"
+  },
+  "options_page": "options/options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://jobs.lever.co/*",
+        "https://*.greenhouse.io/*"
+      ],
+      "js": [
+        "content/util.js",
+        "content/answers.js",
+        "content/adapters.js",
+        "content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
